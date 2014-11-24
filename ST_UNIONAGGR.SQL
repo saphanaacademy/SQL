@@ -1,0 +1,19 @@
+CREATE SCHEMA DEVTEST;  
+
+CREATE COLUMN TABLE "DEVTEST"."GEOTEST" (
+	"ROW_ID" INTEGER CS_INT,
+	"MY_GEO" ST_GEOMETRY,
+	PRIMARY KEY ("ROW_ID")	
+);
+
+insert into "DEVTEST"."GEOTEST" values(1 , NEW ST_POINT('POINT(1 6)'));
+insert into "DEVTEST"."GEOTEST" values(2 , NEW ST_POINT('POINT(6 4)'));
+insert into "DEVTEST"."GEOTEST" values(3 , NEW ST_POINT('POINT(1 12)'));
+insert into "DEVTEST"."GEOTEST" values(4 , NEW ST_POINT('POINT(4 6)'));
+insert into "DEVTEST"."GEOTEST" values(5 , NEW ST_POINT('POINT(10 10)'));
+insert into "DEVTEST"."GEOTEST" values(6 , NEW ST_POINT('POINT(2 4)'));
+
+SELECT ST_UNIONAGGR("MY_GEO").ST_AsWKT() 
+FROM "DEVTEST"."GEOTEST";
+
+insert into "DEVTEST"."GEOTEST" values(7 , NEW ST_POINT('POINT(1 6)'));
