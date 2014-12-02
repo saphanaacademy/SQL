@@ -1,0 +1,10 @@
+-- HERE Map Client Demo Location
+	http://<your hana system>:80<your instance number>/sap/hana/spatial/mapClient/demo/
+
+
+-- WEB IDE Location
+	http://<your hana system>:80<your instance number>/sap/hana/ide/editor/
+
+
+-- AUTHORIZATIONS FOR WEB IDE
+	CALL GRANT_ACTIVATED_ROLE('sap.hana.xs.ide.roles::Developer','<your dev user>');
