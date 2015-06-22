@@ -1,0 +1,23 @@
+-- this syntax is used for testing the ST_AsSVGAggr() method in HANA
+
+CREATE SCHEMA DEVTEST;
+SET SCHEMA DEVTEST;
+
+CREATE COLUMN TABLE GEOTEST (
+ 	ID INTEGER,
+ 	GEO ST_GEOMETRY
+ );  
+
+INSERT INTO GEOTEST VALUES(1,	NEW ST_Polygon( 'Polygon(( 0 0, 0 20, 60 10, 0 0 ))' ));
+INSERT INTO GEOTEST VALUES(2,	NEW ST_Polygon( 'Polygon(( 0 10, 10 60, 0 0, 0 10 ))' ));
+INSERT INTO GEOTEST VALUES(3,	NEW ST_Polygon( 'Polygon(( 60 60, 0 0, 20 0, 60 60 ))' ));
+
+SELECT 
+ ST_AsSVGAggr(GEO)
+FROM GEOTEST;
+
+SELECT 
+ ID, 
+ GEO.ST_AsWKT(),
+ GEO.ST_AsSVG()
+FROM GEOTEST; 
