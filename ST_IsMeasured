@@ -27,5 +27,4 @@ SELECT
  --GEO.ST_M(), --errors will be returned by this method when type is not point or geometry does not have a measure
  GEO.ST_MMAX(), 
  GEO.ST_MMIN()
-FROM GEOTEST
---WHERE  GEO.ST_IsMeasured() = 1; 
+FROM GEOTEST;
