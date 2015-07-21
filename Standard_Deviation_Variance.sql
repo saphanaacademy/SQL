@@ -1,7 +1,6 @@
 -- this syntax is used for testing the standard deviation and variance functions in SAP HANA 
 
 CREATE SCHEMA DEVTEST;
-DROP TABLE DEVTEST.TESTRESULTS CASCADE;
 CREATE COLUMN TABLE DEVTEST.TESTRESULTS (
 	NAME VARCHAR(20),
 	SCORE INTEGER
