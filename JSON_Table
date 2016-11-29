@@ -1,0 +1,115 @@
+CREATE SCHEMA DEVTEST;
+CREATE TABLE DEVTEST.T1 (A INT, B NVARCHAR(5000));
+
+INSERT INTO DEVTEST.T1 VALUES (1, '
+	{
+		"PONumber": 1,
+		"Reference": "MSULLIVA-20141102",
+		"Requestor": "Martha Sullivan",
+		"User": "MSULLIVA",
+		"CostCenter": "A50",
+		"ShippingInstructions":
+			{
+				"name": "Martha Sullivan",
+				"Address":
+					{
+						"street": "200 Sporting Green",
+						"city": "South San Francisco",
+						"state": "CA",
+						"zipCode": 99236,
+						"country": "United States of America"
+					},
+				"Phone": [{"type": "Office", "number": "979-555-6598"}]
+			},
+		"SpecialInstructions": "Surface Mail",
+		"LineItems": [
+			{"ItemNumber": 1, "Part": {"Description": "Run Lola Run", "UnitPrice": 19.95, "UPCCode": 43396040144}, "Quantity": 7},
+			{"ItemNumber": 2, "Part": {"Description": "Felicias Journey", "UnitPrice": 19.95, "UPCCode": 12236101345}, "Quantity": 1},
+			{"ItemNumber": 3, "Part": {"Description": "Lost and Found", "UnitPrice": 19.95, "UPCCode": 85391756323}, "Quantity": 8},
+			{"ItemNumber": 4, "Part": {"Description": "Karaoke: Rock & Roll Hits of 80s & 90s 8", "UnitPrice": 19.95, "UPCCode": 13023009592}, "Quantity": 8},
+			{"ItemNumber": 5, "Part": {"Description": "Theremin: An Electronic Odyssey", "UnitPrice": 19.95, "UPCCode": 27616864451}, "Quantity": 8}
+		]
+	}
+');
+
+
+--	JSON_TABLE (
+--		<JSON_API_common_syntax>
+--		<JSON_table_columns_clause>
+--		[ <JSON_table_error_behavior> ON ERROR ]
+--	)
+
+SELECT JT.*
+FROM JSON_TABLE (
+		DEVTEST.T1.B, '$.LineItems[*]'
+		COLUMNS (
+			RN FOR ORDINALITY,
+			ITEM_NUMBER INT PATH '$.ItemNumber',
+			UPC_CODE BIGINT PATH '$.Part.UPCCode'
+		)
+) AS JT;
+
+-- selecting from a formatted column
+SELECT * 
+FROM JSON_TABLE (
+		DEVTEST.T1.B, '$.ShippingInstructions'
+		COLUMNS (
+			PHONE VARCHAR(200) FORMAT JSON PATH '$.Phone',
+			ADDRESS VARCHAR(200) FORMAT JSON PATH '$.Address'
+		)
+) AS JT;
+
+-- going even further down the path
+SELECT *
+FROM JSON_TABLE (
+		DEVTEST.T1.B, '$.ShippingInstructions.Address'
+		COLUMNS (
+			STREET NVARCHAR(50) PATH '$.street',
+			CITY NVARCHAR(50) PATH '$.city'
+		)
+) AS JT;
+
+-- using nested path instead
+SELECT *
+FROM JSON_TABLE (
+		DEVTEST.T1.B, '$.ShippingInstructions'
+		COLUMNS (
+			NESTED PATH '$.Address'
+			COLUMNS (
+				STREET NVARCHAR(50) PATH '$.street',
+				CITY NVARCHAR(50) PATH '$.city'
+		)
+	)
+) AS JT;
+
+-- select from an ordinality column with nested columns
+SELECT *
+FROM JSON_TABLE (
+		DEVTEST.T1.B, '$'
+		COLUMNS (
+			RN FOR ORDINALITY,
+			USER_NAME NVARCHAR(20) PATH '$.User',
+			NESTED PATH '$.LineItems[1,2]'
+			COLUMNS (
+				ORDER_NUMBER FOR ORDINALITY,
+				ITEM_NUMBER INT PATH '$.ItemNumber',
+				QUANTITY INT PATH '$.Quantity'
+			)
+		)
+) AS JT;
+
+
+-- filtering records
+WITH RS AS (
+	SELECT * 
+	FROM DEVTEST.T1
+	WHERE A = 1
+)
+SELECT JT.*
+	FROM JSON_TABLE (
+			RS.B, '$'
+			COLUMNS (
+				RN FOR ORDINALITY,
+				USER_NAME NVARCHAR(20) PATH '$.User'
+			)
+	) AS JT;
