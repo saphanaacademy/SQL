@@ -1,0 +1,37 @@
+/*
+JSON_QUERY (
+	<JSON_API_common_syntax>
+	[ <JSON_output_clause> ]
+	[ <JSON_query_wrapper_behavior> ]
+	[ <JSON_query_empty_behavior> ]
+	[ <JSON_query_error_behavior> ]
+)
+*/
+
+WITH RS AS (
+	SELECT 
+		'{
+			"Items": [
+				{"ItemNumber": 1, "Part": {"Description": "Run Lola Run", "UPCCode": 43396040144}},
+				{"ItemNumber": 2, "Part": {"Description": "Felicias Journey", "UPCCode": 12236101345}},
+				{"ItemNumber": 3, "Part": {"Description": "Lost and Found", "UPCCode": 85391756323}}
+			]
+		}' AS JT
+	FROM DUMMY
+)
+SELECT JSON_QUERY(
+	JT, '$'
+	--JT, '$.Items'
+	--JT, '$.Items[0]'
+	--JT, '$.Items[0,2]'
+	--JT, '$.Items[0 to 2]'
+	--JT, '$.Items.Part'
+	--JT, '$.Items.Part.Description'
+	--JT, '$.Items.SomethingElse'
+	--JT, '6'
+	
+	--RETURNING NVARCHAR(200)
+	--WITH ARRAY WRAPPER
+	EMPTY OBJECT ON EMPTY
+	EMPTY ARRAY ON ERROR
+) AS STUFF FROM RS
