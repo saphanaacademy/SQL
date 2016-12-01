@@ -1,0 +1,42 @@
+/*
+JSON_VALUE (
+	<JSON_API_common_syntax>
+	[ <JSON_returning_clause> ]
+	[ <JSON_value_empty_behavior> ON EMPTY ]
+	[ <JSON_value_error_behavior> ON ERROR ]
+)
+*/
+
+WITH RS AS (
+	SELECT 
+		'{
+			"PONumber": 24,
+			"Items": [
+				{"ItemNumber": 11, "Part": {"Description": "Spaceballs", "UPCCode": 4339604326}},
+				{"ItemNumber": 12, "Part": {"Description": "Canadian Bacon", "UPCCode": 12236109712}},
+				{"ItemNumber": 13, "Part": {"Description": "Planes, Trains, and Automobiles", "UPCCode": 853917536512}}
+			]
+		}' AS JT
+	FROM DUMMY
+)
+SELECT JSON_VALUE(
+	JT, '$.PONumber'
+	--JT, '$.Items[0].ItemNumber'
+	--JT, '$.Items[2].Part.Description'
+
+	-- the following are ON EMPTY examples
+		--JT, '$.Items[0].SomethingElse'	-- there is no SomethingElse item in the object
+		--JT,  'lax $.Items[3]'				-- there is no 4th array element
+
+	-- the following are ON ERROR examples
+		--JT, '$.Items.Part.Description'	-- cannot return multiple Descriptions from Items
+		--JT, '6' 							-- missing JSON path context '$'
+	
+	--RETURNING VARCHAR -- this type must match the result value type and the ON EMPTY & ON ERROR types
+	--DEFAULT 'sorry, no matching value' ON EMPTY
+	--DEFAULT 'sigh, there is an error' ON ERROR
+	
+	RETURNING INTEGER
+	DEFAULT  0 ON EMPTY
+	DEFAULT -1 ON ERROR
+) AS STUFF FROM RS
