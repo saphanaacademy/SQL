@@ -1,0 +1,21 @@
+-- XMLEXTRACT (<XML_document>, <XPath_query>)
+-- XMLEXTRACTVALUE (<XML_document>, <XPath_query>)
+
+
+WITH I AS (
+	SELECT 
+		'<doc>
+			<item><id>1</id><name>Box</name></item>
+			<item><id>2</id><name>Jar</name></item>
+		</doc>' AS I
+	FROM DUMMY
+)
+SELECT
+	XMLEXTRACT (I, '/doc/item[2]/name')
+ 	--XMLEXTRACT (I, '/doc/item[2]')	
+	--XMLEXTRACT (I, '/doc')
+	--XMLEXTRACTVALUE (I, '/doc')
+ 	--XMLEXTRACTVALUE (I, '/doc/item[2]')
+ 	--XMLEXTRACTVALUE (I, '/doc/item[2]/name')
+ 	--XMLEXTRACTVALUE (I, '/doc/item[1]/id')
+FROM I;
