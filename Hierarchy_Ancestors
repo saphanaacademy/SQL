@@ -26,7 +26,7 @@ ORDER BY hierarchy_rank;
 
 ------------------
 --
--- example 2: find 'grandparents' or two levels up ancestry for nodes 'F1 C1' & 'F1 D2'
+-- example 2: find nodes that are two levels up ancestry for nodes 'F1 C1' & 'F1 D2'
 --
 ------------------
 
