@@ -1,0 +1,14 @@
+SELECT *
+FROM HIERARCHY (
+	SOURCE ( 
+		SELECT 
+			EMPLOYEE AS node_id, 
+			SUPERVISOR AS parent_id
+		FROM DEVTEST.COMPANYHIERARCHY
+	)
+	--START WHERE EMPLOYEE LIKE '%B%'  	--filter on table column(s)
+		--OR SUPERVISOR LIKE '%C%'		--filters can create orphans
+	--DEPTH 1  							--integer, default = 0, can't be used with ORPHAN options
+	--ORPHAN IGNORE						--[IGNORE (default), ERROR, ROOT, ADOPT]
+	CACHE FORCE  						--[CACHE (default), NO CACHE, CACHE FORCE] 
+);
