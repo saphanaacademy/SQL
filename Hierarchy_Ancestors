@@ -1,0 +1,105 @@
+------------------
+--
+-- example 1: return all ancestors of node 'F1 D2'
+--
+------------------
+
+SELECT
+	node_id, 
+	hierarchy_rank,
+	hierarchy_distance
+FROM HIERARCHY_ANCESTORS (
+	SOURCE HIERARCHY (
+		SOURCE ( 
+			SELECT 
+				EMPLOYEE AS node_id, 
+				SUPERVISOR AS parent_id
+			FROM DEVTEST.COMPANYHIERARCHY
+			ORDER BY node_id
+		)
+		CACHE FORCE
+	)
+	START WHERE node_id = 'F1 D2'
+)
+ORDER BY hierarchy_rank;
+
+
+------------------
+--
+-- example 2: find 'grandparents' or two levels up ancestry for nodes 'F1 C1' & 'F1 D2'
+--
+------------------
+
+WITH H AS (
+	SELECT *
+	FROM HIERARCHY (
+		SOURCE ( 
+			SELECT 
+				EMPLOYEE AS node_id, 
+				SUPERVISOR AS parent_id
+			FROM DEVTEST.COMPANYHIERARCHY
+			ORDER BY node_id
+		)
+		CACHE FORCE
+	)
+)
+SELECT 
+	start_id,
+	start_level,
+	start_rank,
+	node_id AS END_ID, 
+	hierarchy_level AS END_LEVEL,
+	hierarchy_rank AS END_RANK
+FROM HIERARCHY_ANCESTORS (
+	SOURCE H
+	START (
+		SELECT 
+			hierarchy_level AS start_level, 
+			hierarchy_rank AS start_rank, 
+			node_id AS start_id
+		FROM H
+		WHERE node_id in ('F1 C1', 'F1 D2')
+	)
+	DISTANCE FROM -2 TO -2
+)
+ORDER BY start_rank;
+
+
+------------------
+--
+-- example 3: find closest common ancestor between nodes 'F1 D1' & 'F1 D3'
+--
+------------------
+
+WITH H AS (
+	SELECT *
+	FROM HIERARCHY (
+		SOURCE ( 
+			SELECT 
+				EMPLOYEE AS node_id, 
+				SUPERVISOR AS parent_id
+			FROM DEVTEST.COMPANYHIERARCHY
+			ORDER BY node_id
+		)
+		CACHE FORCE
+	)
+)
+SELECT TOP 1
+	node_id,
+	hierarchy_level 
+FROM ( 
+	SELECT 
+		node_id, 
+		hierarchy_level
+	FROM HIERARCHY_ANCESTORS ( 
+		SOURCE H 
+		START WHERE node_id = 'F1 D1' )
+	INTERSECT
+	SELECT 
+		node_id, 
+		hierarchy_level
+	FROM HIERARCHY_ANCESTORS ( 
+		SOURCE H 
+		START WHERE node_id = 'F1 D3')
+)
+ORDER BY hierarchy_level DESC;
