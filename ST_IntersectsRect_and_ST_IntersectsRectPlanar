@@ -1,0 +1,70 @@
+-------------------------
+--
+-- ST_IntersectsRectPlanar & ST_IntersectsRect show identical results
+--
+-------------------------
+
+SELECT
+	'Saskatoon to Dog River' AS INPUT_GEOMETRY, 
+	ST_GeomFromText('LineString(-106.6700 52.1332, -104.9075 50.190278)', 4326).ST_IntersectsRectPlanar(
+		ST_GeomFromText('POINT(-108 51)', 4326), ST_GeomFromText('POINT(-103 54)', 4326)
+	) AS DOES_THIS_INTERSECT
+FROM DUMMY
+
+UNION ALL
+
+SELECT 
+	'Saskatoon',
+	ST_GeomFromText('Point(-106.6700 52.1332)', 4326).ST_IntersectsRectPlanar(
+		ST_GeomFromText('POINT(-108 51)', 4326), ST_GeomFromText('POINT(-103 54)', 4326)
+	)
+FROM DUMMY
+
+UNION ALL
+
+SELECT 
+	'Dog River',
+	ST_GeomFromText('Point(-104.9075 50.190278)', 4326).ST_IntersectsRectPlanar(
+		ST_GeomFromText('POINT(-108 51)', 4326), ST_GeomFromText('POINT(-103 54)', 4326)
+	) 
+FROM DUMMY;
+
+
+-------------------------
+--
+-- ST_IntersectsRectPlanar & ST_IntersectsRect show different results
+--
+-------------------------
+
+SELECT
+	'round' AS SYSTEM_USED, 
+	'170 0, -170 0' AS GEO_LINE,
+	'ST_IntersectsRect' AS FUNCTION_USED,
+	'10 10, 10 -10, -10 -10, -10 10' AS GEO_RECT,
+	ST_GeomFromText('LineString(170 0, -170 0)', 4326).ST_IntersectsRect(
+		ST_GeomFromText('POINT(-10 -10)', 4326), ST_GeomFromText('POINT(10 10)', 4326)
+	) AS DOES_THIS_INTERSECT,
+	-- Returns 0 as the line string crosses the dateline in round-earth reference systems 
+	--	and does not contain the point (0, 0).
+	NEW ST_Point('POINT (170 0)', 4326).ST_Distance(
+		NEW ST_Point('POINT (-170 0)', 4326), 'kilometer'
+	) AS GEO_LINE_LENGTH
+FROM DUMMY
+
+UNION ALL
+
+SELECT 
+	'flat', 
+	'170 0, -170 0',
+	'ST_IntersectsRectPlanar',
+	'10 10, 10 -10, -10 -10, -10 10',
+	ST_GeomFromText('LineString(170 0, -170 0)', 4326).ST_IntersectsRectPlanar(
+		ST_GeomFromText('POINT(-10 -10)', 4326), ST_GeomFromText('POINT(10 10)', 4326)
+	),
+	-- Returns 1 as the line-string is re-interpreted as flat geometry. 
+	--	It contains the point (0, 0) and does not cross the dateline anymore.
+	NEW ST_Point('POINT (170 0)', 1000004326).ST_Distance(
+		NEW ST_Point('POINT (-170 0)', 1000004326), 'kilometer'
+	)
+FROM DUMMY;
+
