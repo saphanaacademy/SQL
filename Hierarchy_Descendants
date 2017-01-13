@@ -1,0 +1,65 @@
+------------------
+--
+-- example 1: return all descendants of node 'F1 B2'
+--
+------------------
+
+SELECT
+	node_id, 
+	hierarchy_rank,
+	hierarchy_distance
+FROM HIERARCHY_DESCENDANTS (
+	SOURCE HIERARCHY (
+		SOURCE ( 
+			SELECT 
+				EMPLOYEE AS node_id, 
+				SUPERVISOR AS parent_id
+			FROM DEVTEST.COMPANYHIERARCHY
+			ORDER BY node_id
+		)
+		CACHE FORCE
+	)
+	START WHERE node_id = 'F1 B2'
+)
+ORDER BY hierarchy_rank;
+
+
+------------------
+--
+-- example 2: count the leaves below all nodes of LOETYPE 'y'
+--
+------------------
+
+WITH H AS (
+	SELECT *
+	FROM HIERARCHY (
+		SOURCE ( 
+			SELECT 
+				EMPLOYEE AS node_id, 
+				SUPERVISOR AS parent_id,
+				LOETYPE
+			FROM DEVTEST.COMPANYHIERARCHY
+			ORDER BY node_id
+		)
+		CACHE FORCE
+	)
+)
+SELECT
+	start_id AS node_id,
+	COUNT(*) AS num_leaves
+FROM ( 
+	SELECT start_id
+	FROM HIERARCHY_DESCENDANTS ( 
+		SOURCE H
+		START ( 
+			SELECT 
+				hierarchy_rank AS start_rank, 
+				node_id AS start_id
+			FROM H
+			WHERE LOETYPE ='y' 
+		) 
+	)
+	WHERE hierarchy_tree_size = 1
+)
+GROUP BY start_id;
+
