@@ -1,0 +1,12 @@
+-- ST_AlphaShape returns the alpha shape geometry of the input geometry, based on a specified radius value.
+
+SELECT ST_GeomFromText('MULTIPOINT((0 0), (0 1), (1 1), (.3 .7))', 0).ST_AlphaShape(1.5).ST_AsText() FROM dummy;
+SELECT ST_GeomFromText('MULTIPOINT((0 0), (0 1), (1 1), (.3 .7))', 0).ST_AlphaShape(0.6).ST_AsText() FROM dummy;
+SELECT ST_GeomFromText('MULTIPOINT((0 0), (0 1), (1 1), (.3 .7))', 0).ST_AlphaShape(0.3).ST_AsText() FROM dummy;
+SELECT ST_GeomFromText('MULTIPOINT((0 0), (0 1), (1 1), (.3 .7))', 0).ST_AlphaShape(0.1).ST_AsText() FROM dummy;
+
+-- returns NULL when an empty geometry found in input
+SELECT ST_GeomFromText('POLYGON EMPTY', 1000004326).ST_AlphaShape(3.0, 'meter') FROM dummy;
+
+-- error due to using round earth system (4326)
+SELECT ST_GeomFromText('POLYGON EMPTY', 4326).ST_AlphaShape(3.0, 'meter') FROM dummy;
