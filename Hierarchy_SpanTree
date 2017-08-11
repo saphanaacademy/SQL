@@ -1,0 +1,111 @@
+CREATE SCHEMA DEVTEST;
+SET SCHEMA DEVTEST;
+DROP TABLE test_hierarchy CASCADE;
+
+CREATE COLUMN TABLE test_hierarchy (parent_id VARCHAR(1), node_id VARCHAR(1));
+				
+INSERT INTO test_hierarchy VALUES (null, 'A');			
+INSERT INTO test_hierarchy VALUES (null, 'X');				
+INSERT INTO test_hierarchy VALUES ('A', 'B');				
+INSERT INTO test_hierarchy VALUES ('A', 'C');
+INSERT INTO test_hierarchy VALUES ('A', 'D');
+INSERT INTO test_hierarchy VALUES ('B', 'E');
+INSERT INTO test_hierarchy VALUES ('B', 'F');
+INSERT INTO test_hierarchy VALUES ('C', 'G');
+INSERT INTO test_hierarchy VALUES ('C', 'H');
+INSERT INTO test_hierarchy VALUES ('D', 'G');
+INSERT INTO test_hierarchy VALUES ('X', 'H');
+INSERT INTO test_hierarchy VALUES ('F', 'G');
+INSERT INTO test_hierarchy VALUES ('G', 'I');
+INSERT INTO test_hierarchy VALUES ('G', 'J');
+INSERT INTO test_hierarchy VALUES ('H', 'K');
+	
+-----------------------
+
+SELECT 
+	parent_id AS parent,
+	node_id AS node
+FROM test_hierarchy 
+
+EXCEPT
+
+SELECT 
+	PARENT_ID AS parent,
+	NODE_ID AS node
+FROM 
+	HIERARCHY_SPANTREE (
+		SOURCE (
+			SELECT parent_id, node_id 
+			FROM test_hierarchy 
+			ORDER BY parent_id, node_id
+		)
+	);
+	
+-----------------------
+
+SELECT 
+	-- Hierarchy_SpanTree() generation
+	HIERARCHY_RANK AS rank,
+	HIERARCHY_TREE_SIZE AS treesize,
+	HIERARCHY_PARENT_RANK AS parent_rank,
+	HIERARCHY_LEVEL AS level,
+	HIERARCHY_IS_CYCLE AS cycle,
+	HIERARCHY_IS_ORPHAN AS orphan,
+	PARENT_ID AS parent,
+	NODE_ID AS node
+FROM 
+	HIERARCHY_SPANTREE (
+		SOURCE (
+			SELECT parent_id, node_id 
+			FROM test_hierarchy 
+			ORDER BY parent_id, node_id
+		)
+	);	
+	
+-----------------------
+
+SELECT 
+	-- regular Hierarchy() generation
+	HIERARCHY_RANK AS rank,
+	HIERARCHY_TREE_SIZE AS treesize,
+	HIERARCHY_PARENT_RANK AS parent_rank,
+	HIERARCHY_LEVEL AS level,
+	HIERARCHY_IS_CYCLE AS cycle,
+	HIERARCHY_IS_ORPHAN AS orphan,
+	PARENT_ID AS parent,
+	NODE_ID AS node
+FROM 
+	HIERARCHY (
+		SOURCE (
+			SELECT parent_id, node_id 
+			FROM test_hierarchy 
+			ORDER BY parent_id, node_id
+		)
+	);
+	
+-----------------------
+
+SELECT 
+	parent_id AS parent,
+	node_id AS node
+FROM test_hierarchy;
+
+-----------------------
+
+-- full syntax example from intro slide
+/*
+SET SCHEMA DEVTEST;
+SELECT *
+FROM 
+	HIERARCHY_SPANTREE (
+		SOURCE (
+			SELECT parent_id, node_id 
+			FROM test_hierarchy 
+			ORDER BY parent_id, node_id
+		)
+		START WHERE node_id = 'X'
+		DEPTH 2
+		CACHE FORCE
+	)
+ORDER BY hierarchy_rank ASC	
+*/
